@@ -1,0 +1,55 @@
+---
+title: "DeLunaOcampoYanina_TercerExamen"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+De una implementacíon del algoritmo PageRank. Su algoritmo debzera recibir una matriz H, un numero natural n, y una distribuci ́on inicial π0. Su algoritmo deber ́a devolver la matriz S asociada, la matriz G asociada y el vector πn
+
+```{r}
+
+optPi <- function(pi, n){
+  aux <- c()
+  for (i in 1:n){
+    aux[i] <- sum(H[,i] * pi)
+  }
+  pi <- aux
+  return(pi)
+}
+
+pagRa <- function(H, pi, iter, a){
+  cjt <- c(1,1,1,1,1,1)
+  alpha <- 0.9
+  res <- 0
+  n <- length(pi)
+  
+  print("La matriz inicial H es:\n")
+  print(H)
+  
+  S <- H + a*((1/n) * cjt)
+  print("La matriz S es: \n")
+  print(S)
+  
+  G <- (alpha*S) + ((1-alpha)*cjt) * (cjt * 1/n)
+  print("La matriz G es: \n")
+  print(G)
+  cat("\n")
+  
+  for (i in 1:iter){
+    pi <- optPi(pi, n)
+    cat("El vector pi en la iteración ",i," es: \n")
+    print(pi)
+  }
+}
+
+a <- c(0,1,0,0,0,0)
+H <- matrix(c(0,0.5,0.5,0,0,0,0,0,0,0,0,0,0.333,0.333,0,0,0.333,0,0,0,0,0,0.5,0.5,0,0,0,0.5,0,0.5,0,0,0,1,0,0), 
+            nrow = 6, ncol = 6, byrow = TRUE)
+pi <- c(1/6,1/6,1/6,1/6,1/6,1/6)
+
+pagRa(H, pi, 13, a)
+
+```

@@ -1,0 +1,101 @@
+---
+title: "Examen 1"
+output: html_notebook
+---
+
+### Alumna: De Luna Ocampoa Yanina
+
+```{r}
+
+### Problema 3
+cat("Problema 3, solución\n")
+
+cards <- function(n){
+  ncards <- c()
+  for(i in 1:n){
+    x <- 5
+    counter <- 0
+   while(x>4){ 
+      x <- sample(1:52, 1)
+      counter <- counter + 1 
+   }
+    ncards <- c(ncards, counter)
+  }
+  print(mean(ncards))
+  print(var(ncards))
+}
+  
+cards(1000)
+
+```
+```{r}
+
+### Problema 4
+cat("Problema 4, solución\n")
+
+### Escribimos la matriz que nos piden
+mat_attacked_ports <- matrix(c(0, 0, 0, 0, 1,
+                               0, 8/13, 3/13, 1/13, 1/13,
+                               1/16, 3/16, 3/8, 1/4, 1/8,
+                               0, 1/11, 4/11, 5/11, 1/11,
+                               0, 1/8, 1/2, 1/8, 1/4), ncol = 5, byrow = TRUE)
+
+### Escribimos su distribución inicial
+init = c(0, 0, 0, 0, 1)
+
+## Creamos la función Markov
+markov <- function(init,mat,n,labels) { 
+  if (missing(labels)) labels <- 1:length(init)
+  simlist <- numeric(n+1)
+  states <- 1:length(init)
+  simlist[1] <- sample(states,1,prob=init)
+  for (i in 2:(n+1)) 
+  { simlist[i] <- sample(states,1,prob=mat[simlist[i-1],]) }
+  labels[simlist]
+}
+
+
+### (a)  ¿Cuales son los puertos menos y mas probablemente atacados al cabo de 2 semanas?
+
+library(ggplot2)
+n <- 2
+labels <- c('Port 80', 'Port 135', 'Port 139', 'Port 445', 'No attack')
+trials <- 1000
+res <- replicate(trials, markov(mat = mat_attacked_ports,init = init,
+                                n = n, labels = labels))
+
+states_1_week <- res[2,]
+states_2_weeks <- res[3,]
+states <- c(states_1_week, states_2_weeks)
+counts <- as.data.frame(table(states))
+ggplot(counts, aes(x=states, y=Freq, fill=states)) +
+  geom_bar(stat = "identity") + 
+  geom_text(aes(label = Freq), vjust = 1.5, color = "white") +
+  labs(cat("Attacked ports after 2 weeks (", trials, " trials )"))
+
+```
+```{r}
+
+### (b) Encuentre la distribucion a largo plazo de los puertos atacados.
+
+error <- 10 ** -8
+i <- 1
+A_n_minus_1 <- mat_attacked_ports
+number_entries <- dim(mat_attacked_ports)[1] * dim(mat_attacked_ports)[2]
+flag <- TRUE
+while (flag) {
+  A_n <- A_n_minus_1 %*% mat_attacked_ports
+  aux_mat <- A_n - A_n_minus_1
+  aux_count <- length(aux_mat[abs(aux_mat) < error])
+  if (aux_count == number_entries) {
+    flag <- FALSE
+  }
+  else {
+    i <- i + 1
+    A_n_minus_1 <- A_n
+  }
+}
+cat("En", i, "iteraciones, la transición de la matriz converge a la siguiente matriz: n")
+print(A_n)
+
+```

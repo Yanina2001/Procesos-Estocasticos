@@ -1,0 +1,253 @@
+---
+title: "Practica_25-08-2022"
+author: "ASA"
+date: "8/25/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### R Markdown
+
+El lenguaje de programacion R, ha sido por mucho tiempo usado para realizar estudios probabilisticos y estadisticos bastante serios, es por eso que en nuestro curso tambien realizaremos algunas practicas en este lenguaje.
+
+Un documento R Markdown es un tipo de archivo muy util para documentar experimentos y codigo escrito en R. El que esta leyendo, es en particular un tutorial bastante simple que nos servira para introducirnos al lenguaje R y algunas funciones que ocuparemos a lo largo del curso.
+
+Una de las utilidades de esta herramienta es que nos permites escribir en distintos lenguajes de programacion (latex, sql, python, r...)
+
+### El binomio de Newton.
+$$(a+b)^n= \sum_{k=0}^n{n \choose k} \cdot a^{n-k}\cdot b^k$$
+### Tipos de  datos.
+
+R al igual que muchos lenguajes de programacion, dispone de distintos de tipos d/e datos.
+
+
+ - logical
+ 
+ - integer
+ 
+ - double
+ 
+ - character
+```{r}
+
+typeof(TRUE)
+
+typeof(3.L)
+
+typeof(1.3)
+
+typeof("Hola")
+```
+
+### Funciones aritmeticas basicas.
+```{r}
+1+1 # suma 
+2-3  
+2*8
+5/4
+2^2
+7%/%3
+7%%3
+
+```
+
+### Asignaciones.
+```{r}
+x=9.34456
+y<- 89.9
+print(x,4)
+print(y)
+```
+
+
+### Constantes basicas.
+
+```{r}
+pi
+Inf
+-Inf
+```
+
+### Funciones pre-implentadas.
+
+```{r}
+sqrt(4.5)
+log(1.2)
+log(1.2,4)
+factorial(5)
+choose(20,10)
+floor(4.6)
+ceiling(6.7)
+trunc(7.8)
+abs(-9.7)
+
+
+```
+### Funciones trigonometricas
+```{r}
+X0=3.4
+sin(X0)
+cos(X0)
+tan(X0)
+asin(X0)
+acos(X0)
+```
+
+### Declaracion de funciones.
+```{r}
+f1= function(x,y){
+  (x^2*y^2)/(x^2+y^2)
+  }
+
+f1(2.1,3.1)
+```
+podemos listar las funciones que hemos creado, asi como eliminar su espacio en memoria
+
+```{r}
+ls()
+rm(f1)
+rm(list=ls())
+```
+
+
+
+### Estructuras de datos
+
+Los vectores en R estan disenados para alojar datos del mismo tipo, si queremos utilizar vectores formados por diferentes tipos de datos, tendremos que usar listas generalizadas.
+
+```{r}
+
+X1 = seq(1,50,by=1)
+X12= seq(1,50, length.out=10)
+X13= seq(1, by= 2, length.out=10)
+X1
+X12
+X13
+X2=c(1,2,3,4,5)
+```
+
+
+Una vez declarado un vector, podemos acceder a algunas partes especificas de este. Los indices en R se empiezan a contar desde 1.
+
+
+
+
+```{r}
+X3= seq(3, 40, by= 2)
+X3
+X3[3]
+X3[6]
+X3[length(X3)]
+X3[4:6]
+X3[seq(2, length(X3), by=2)]
+X3[seq(1, length(X3), by=2)]
+(1:10)
+X3[-seq(2, length(X3), by=2)]
+X3[c(1,2,3)]
+min(X3)
+max(X3)
+pi+X3
+pi*X3
+3.4^X3
+X3^3.4
+sum(X3)
+prod(X3)
+cumsum(X3)
+mean(X3)
+sum(X3,na.rm=FALSE)
+mean(X3,na.rm=FALSE)
+z= 3.45
+is.na(z)
+X3[is.na(X3)]
+X3[!is.na(X3)]
+na.omit(X3)
+```
+
+
+
+
+En R tambien tenemos a los operadores de comparacion
+
+$$=, \not=, <, >, \geq, \leq, $$
+
+y a los conectores logicos usuales and(&) y or(|).
+
+
+
+
+
+
+
+```{r}
+X3[X3>30]
+X3[X3<10|X3>20]
+X3[!(X3<10|X3>20)]
+which(X3>4)
+X3[which(X3>4)]
+```
+
+### Factores
+
+```{r}
+fac= factor(c(1,1,1,1,2,2,2,3,2,4,1,3,3,4,2,3,4,4), 
+            levels=c(1,2,3,4),
+            labels=c("Exp","Apr","Bue","Exc"))
+fac
+facOrd=ordered(c(1,1,1,1,2,2,2,3,2,4,1,3,3,4,2,3,4,4), 
+            levels=c(1,2,3,4),
+            labels=c("Exp","Apr","Bue","Exc"))
+facOrd 
+```
+
+###  Listas generalizadas
+
+Las listas generalizadas, son listas de objetos, no necesariamente del mismo tipo
+```{r}
+Edades= c(18,19,21,45,65,12,34,56,23,45,67)
+L= list(nombre= "Edades",datos= Edades, Media= mean(Edades),Sumas= cumsum(Edades))
+L
+L$Media
+L$nombre
+L$datos
+L[[2]]
+L[2]
+```
+
+### Matrices y arreglos
+```{r}
+M= matrix(1:12,nrow=4)
+X5=1:16
+M1=matrix(X5, nrow=4, byrow= TRUE)
+M1
+#v1= c(1,2,3,4)
+#v2= 
+M2= rbind(c(1,2,3,4),
+          c(5,6,7,8),
+          M1)
+M2
+M2[1,1]
+M2[1,]
+M2[,1]
+M2[c(1,3),2:3]
+diag(M2)
+nrow(M2)
+ncol(M2)
+dim(M2)
+sum(M2)
+colSums(M2)
+rowSums(M2)
+colMeans(M2)
+apply(M2,MARGIN = 1, FUN= function(x){sqrt(sum(x^2))})
+M3=matrix(1:16, nrow=4)
+M4= M3%*%M3
+det(M4)
+
+#M3
+#M3= rbind(M1, M2)
+#M3
+#M3[1,1]
+#M5[v1,5]
+```

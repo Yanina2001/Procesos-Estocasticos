@@ -1,0 +1,303 @@
+---
+title: "Ejercicios primer parcial"
+output: html_notebook
+---
+###### Alumna: De Luna Ocampo Yanina
+
+######## Ejercicios
+
+######## 1: Cards are drawn from a standard deck, with replacement, until an ace appears. Simulate the mean and variance of the number of cards required.
+
+Function to simulate the card picking and replacing action.
+```{r}
+
+pick_ace_deck <- function( ) {
+  deck <- c("a_c", "2_c", "3_c", "4_c", "5_c", "6_c", "7_c", "8_c", "9_c", "10_c", "j_c", "q_c", "k_c",
+            "a_r", "2_r", "3_r", "4_r", "5_r", "6_r", "7_r", "8_r", "9_r", "10_r", "j_r", "q_r", "k_r",
+            "a_t", "2_t", "3_t", "4_t", "5_t", "6_t", "7_t", "8_t", "9_t", "10_t", "j_t", "q_t", "k_t",
+            "a_p", "2_p", "3_p", "4_p", "5_p", "6_p", "7_p", "8_p", "9_p", "10_p", "j_p", "q_p", "k_p")
+  sample_space <- length(deck)
+  cards <- character()
+  ace <- FALSE
+  i <- 1
+  
+  while (ace == FALSE) {
+    
+    cards[i] <- sample(deck, 1, prob = rep(c(1 / sample_space), sample_space))
+    if (substr(cards[i], 1, 1) == "a")
+      ace <- TRUE
+    else
+      i <- i + 1
+    
+  }
+  
+  return(i)
+  
+}
+
+```
+
+Simulation with 1000 trials
+```{r}
+
+trials <- 1000
+res <- replicate(trials, pick_ace_deck())
+cat("Mean: ", mean(res), "\tVariance: ", var(res))
+
+```
+
+######## 2: Simulate the results of Exercise 1.28. Estimate the mean and variance of the number of accidents per day.
+
+######## 1.28: On any day, the number of accidents on the highway has a Poisson distribution with parameter $Λ. The parameter Λ varies from day to day and is itself a random variable. Find the mean and variance of the number of accidents per day when Λ is uniformly distributed on (0, 3).
+
+Simulation
+```{r}
+
+n <- 1000000
+a <- 0
+b <- 3
+set.seed(1)
+rand_lambda <- runif(n, min = a, max = b)
+accidents <- rpois(n, rand_lambda)
+hist(accidents, breaks = 18, freq = FALSE)
+accidents_mean <- mean(accidents)
+accidents_var <- var(accidents)
+
+```
+
+```{r}
+
+cat("Mean=", accidents_mean, "\tVariance=", accidents_var)
+
+```
+
+######## 3:The behavior of dolphins in the presence of tour boats in Patagonia, Argentina is studied in Dans et al. (2012). A Markov chain model is developed, with state space consisting of five primary dolphin activities (socializing, traveling, milling, feeding, and resting). Considering the following transition matrix is obtained, use technology to estimate the long-term distribution of dolphin activity. 
+```{r}
+
+dolphins <- matrix(c(0.84, 0.11, 0.01, 0.04, 0.00, 0.03, 0.80, 0.04, 0.10, 0.03, 0.01, 0.15, 0.70, 0.07, 0.07,
+                          0.03, 0.19, 0.02, 0.75, 0.01, 0.03, 0.09, 0.05, 0.00, 0.83), ncol = 5, byrow = TRUE)
+
+```
+
+To find the transition matrix after a huge number n of steps, we are going to consider an error of $10^{-8}$ order. So, if the all the differences between each entry of the n-1 steps matrix and the n steps one is least than the error, we are going to stop iterating.
+```{r}
+
+error <- 10 ** -8
+i <- 1
+A_n_minus_1 <- dolphins
+number_entries <- dim(dolphins)[1] * dim(dolphins)[2]
+flag <- TRUE
+
+while (flag) {
+  
+  A_n <- A_n_minus_1 %*% dolphins
+  aux_mat <- A_n - A_n_minus_1
+  aux_count <- length(aux_mat[abs(aux_mat) < error])
+  if (aux_count == number_entries) {
+    flag <- FALSE
+    
+  }
+  else {
+    
+    i <- i + 1
+    A_n_minus_1 <- A_n
+    
+  }
+  
+}
+
+cat("In", i, "iterations, the matrix transition converges to the following matrix:\n")
+print(A_n)
+
+```
+
+######## 4 In computer security applications, a honeypot is a trap set on a network to detect and counteract computer hackers. Honeypot data are studied in Kimou et al. (2010) using Markov chains. The authors obtain honeypot data from a central database and observe attacks against four computer ports—80, 135, 139, and 445—over 1 year. The ports are the states of a Markov chain along with a state corresponding to no port is attacked. Weekly data are monitored, and the port most often attacked during the week is recorded. 
+
+```{r}
+
+attacks <- matrix(c(0, 0, 0, 0, 1,0, 8/13, 3/13, 1/13, 1/13, 1/16, 3/16, 3/8, 1/4, 1/8, 0, 1/11, 4/11, 5/11, 1/11, 0, 1/8, 1/2, 1/8, 1/4), ncol = 5, byrow = TRUE)
+
+init_dist = c(0, 0, 0, 0, 1)
+
+```
+
+####### (a) Which are the least and the most likely attacked ports after 2 weeks?
+```{r}
+
+markov <- function(init,mat,n,labels) { 
+  
+  if (missing(labels)) labels <- 1:length(init)
+  simlist <- numeric(n+1)
+  states <- 1:length(init)
+  simlist[1] <- sample(states,1,prob=init)
+  for (i in 2:(n+1)) 
+  { simlist[i] <- sample(states,1,prob=mat[simlist[i-1],]) }
+  labels[simlist]
+  
+}
+
+```
+
+```{r}
+
+library(ggplot2)
+
+n <- 2
+labels <- c('Port 80', 'Port 135', 'Port 139', 'Port 445', 'No attack')
+trials <- 1000
+res <- replicate(trials, markov(mat = attacks,init = init_dist,
+                                n = n, labels = labels))
+states_2_weeks <- res[3,]
+counts <- as.data.frame(table(states_2_weeks))
+ggplot(counts, aes(x=states_2_weeks, y=Freq, fill=states_2_weeks)) +
+  geom_bar(stat = "identity") + 
+  geom_text(aes(label = Freq), vjust = 1.5, color = "white") +
+  labs(cat("Attacked ports after 2 weeks (", trials, " trials )"))
+
+```
+
+So after two weeks, the most likely attacked port is port 139 and the least likely is port 80.
+
+####### (b) Find the long-term distribution of attacked ports.
+```{r}
+
+error <- 10 ** -8
+i <- 1
+A_n_minus_1 <- attacks
+number_entries <- dim(attacks)[1] * dim(attacks)[2]
+flag <- TRUE
+
+while (flag) {
+  
+  A_n <- A_n_minus_1 %*% attacks
+  aux_mat <- A_n - A_n_minus_1
+  aux_count <- length(aux_mat[abs(aux_mat) < error])
+  if (aux_count == number_entries) {
+    flag <- FALSE
+    
+  }
+  else {
+    
+    i <- i + 1
+    A_n_minus_1 <- A_n
+    
+  }
+  
+}
+
+cat("In", i, "iterations, the matrix transition converges to the following matrix:\n")
+print(A_n)
+
+```
+
+######## 5 See gamblersruin.R. Simulate gambler’s ruin for a gambler with initial stake $2, playing a fair game.
+
+####### (a) Estimate the probability that the gambler is ruined before he wins $5. 
+
+```{r}
+  
+gamble <- function(k, n, p, goal) {
+  
+	stake <- k
+	stake_historic <- integer()
+	reach_goal <- FALSE
+	i <- 1
+	
+	while (stake > 0 & stake < n) {
+	  
+		bet <- sample(c(-1, 1), 1, prob = c(1 - p, p))
+		stake <- stake + bet
+		stake_historic[i] <- stake 
+		if (stake == goal)
+		  reach_goal = TRUE
+		i <- i + 1
+		
+	}
+	
+	if (stake == 0) 
+	   return(list(1, reach_goal)) 
+	else 
+	  return(list(0, reach_goal))
+	
+} 
+
+
+k <- 2
+n <-  1000
+p <- 0.50
+goal <- 5
+trials <- 1000
+res <- replicate(trials, gamble(k, n, p, goal))
+res_not_reach_goal <- res[2, res[1,] == 1 & res[2,] == FALSE]
+prob_not_reach_goal <- length(res_not_reach_goal) / trials
+cat("The probability that the gambler is ruined before reaching the goal of $",
+    goal, "is", prob_not_reach_goal, "\nwith p =", p, ", i.e. a fair game")
+
+```
+
+
+####### (b) Construct the transition matrix for the associated Markov chain. Estimate the desired probability in (a) by taking high matrix powers.
+
+The states of this matrix are going to be the possible wealthy values before reaching the goal of 5, i.e. 0, 1, 2, 3, 4, 5 monetary units.
+```{r}
+
+trans_matrix_gamblers_ruin <- matrix(c(1, 0, 0, 0, 0, 0,
+                                       1 - p, 0, p, 0, 0, 0,
+                                       0, 1 - p, 0, p, 0, 0,
+                                       0, 0, 1 - p, 0, p, 0,
+                                       0, 0, 0, 1 - p, 0, p,
+                                       0, 0, 0, 0, 0, 1),
+                                       ncol = 6, byrow = TRUE)
+print(trans_matrix_gamblers_ruin)
+
+```
+
+As it could be seen in previous exercises, we are going to consider an error of $10^{-8}$ order. So, if the all the differences between each entry of the n-1 steps matrix and the n steps one is least than the error, we are going to stop iterating.
+```{r}
+
+error <- 10 ** -8
+i <- 1
+A_n_minus_1 <- trans_matrix_gamblers_ruin
+number_entries <- dim(trans_matrix_gamblers_ruin)[1] * dim(trans_matrix_gamblers_ruin)[2]
+flag <- TRUE
+
+while (flag) {
+  
+  A_n <- A_n_minus_1 %*% trans_matrix_gamblers_ruin
+  aux_mat <- A_n - A_n_minus_1
+  aux_count <- length(aux_mat[abs(aux_mat) < error])
+  if (aux_count == number_entries) {
+    flag <- FALSE
+  }
+  
+  else {
+    
+    i <- i + 1
+    A_n_minus_1 <- A_n
+    
+  }
+  
+}
+
+df_trans_matrix_gamblers_ruin = data.frame(round(A_n, 2))
+rownames(df_trans_matrix_gamblers_ruin) <- c("wealthy_0", "wealthy_1",
+                                             "wealthy_2", "wealthy_3",
+                                             "wealthy_4", "wealthy_5")
+
+colnames(df_trans_matrix_gamblers_ruin) <- c("wealthy_0", "wealthy_1",
+                                             "wealthy_2", "wealthy_3",
+                                             "wealthy_4", "wealthy_5")
+
+cat("In", i, "iterations, the matrix transition converges to the following matrix:\n")
+
+print(df_trans_matrix_gamblers_ruin)
+
+```
+
+
+####### (c) Compare your results with the exact probability.
+
+Due the probability is given by (n-k)/n with n = 5 and k = 2 for this problem.
+
+We have that the results shown by the simulation are correct.
+

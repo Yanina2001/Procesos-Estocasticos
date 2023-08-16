@@ -1,0 +1,80 @@
+---
+title: "Segundo examen"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Ejercicio examen 4
+
+Simula un proceso de Poisson espacial con $\lambda = 10$ sobre una caja de volumen 8 con vértices a los 8 puntos $\pm 1, \pm 1, \pm 1$. Estima la media y la varianza del número de puntos en la bola concentrada en el origen de radio $1$.
+
+Tenemos que, el valor exacto, está dado por: $$
+\lambda|A|= 10 \cdot\frac{4}{3}\cdot \pi\cdot1^3 \approx 41.89
+$$
+
+```{r}
+lambda <- 10
+radio <- 1
+volume <- 8
+intentos = 10000
+simlist <- numeric(intentos)
+
+for(i in 1:intentos) {
+
+  n_puntos <- rpois(1, lambda * volume)
+  puntos_coor = matrix(runif(n_puntos*3, -1, 1), ncol = 3)
+  g <- 0
+  
+  for(j in 1:n_puntos){
+    r <- 0
+    for (crdnd in puntos_coor[j,]) {
+      r <- r + crdnd^2
+    }
+    r <- sqrt(r)
+    if(r <= radio){
+      g <- g + 1
+    }
+    
+  }
+  
+  simlist[i] <- g
+}
+
+cat("Para la bola de centrada en el origen de radio 1.\n")
+cat("El promedio de puntos que contiene la esfera es: ", mean(simlist))
+cat("\nLa varianza de puntos es: ", var(simlist))
+```
+
+## Ejercicio examen 5
+
+Inversionistas adquieren 1k dólares en bonos en tiempos aleatorios de un proceso de Poisson con parámetro $\lambda$. Si la tasa de interés es $r$, entonces el valor esperado total presente de una inversión adquirida al tiempo $t$ es $1000e^{-rt}$. Simule el valor actual total esperado de los bonos si la tasa de interés es del 4 %, el parámetro de Poisson es $\lambda = 50$ y $t = 10$.
+
+Sabemos que: $$\text{Valor presente}=\frac{1000\lambda \left(1- e^{−rt}\right)}{r}$$ Entonces, tenemos que: $$
+\frac{(1000)(50)\cdot \left(1- e^{−(0.04)(10)}\right)}{0.04} \approx  412,100
+$$
+
+```{r}
+intentos = 10000
+simlist <- numeric(intentos)
+lambda <- 50
+precio <- 1000
+r <- 0.04
+t = 10
+
+for (i in 1:intentos) {
+  bonos <- rpois(1, lambda*t)
+  ord_tm <- runif(bonos, 0, t)
+  value <- 0
+  
+  for (j in ord_tm) {
+    value <- value + 1000*exp(-r*j)
+  }
+  
+  simlist[i] <- value
+}
+
+cat("El valor actual esperado es:", mean(simlist))
+```
